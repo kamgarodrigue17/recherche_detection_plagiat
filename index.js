@@ -35,6 +35,7 @@ app.use(cors());
 const port = 3000;
 
 app.use(express.json());// Handle SSE endpoint connection
+app.use('/upload',express.static(__dirname + '/downloaded_pdfs'))
 
 
 // Configurez Multer pour gérer les fichiers uploadés
