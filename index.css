@@ -1,0 +1,143 @@
+:root {
+  --primary-color: #0ea5e9;
+  --secondary-color: #4b5563;
+  --secondary-100: #9ca3af;
+}
+
+body {
+  margin: 0;
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+    "Lucida Sans", Arial, sans-serif;
+}
+
+.header {
+  padding: 8px 30px;
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+}
+
+.header h1 {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.hero {
+  padding-top: 20px;
+  padding-left: 30px;
+  padding-right: 30px;
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}
+
+.hero__text {
+  padding-top: 60px;
+  font-weight: bold;
+}
+
+.hero h1 {
+  font-size: 30px;
+  color: var(--secondary-color);
+}
+
+.hero p {
+  font-size: 20px;
+  color: var(--secondary-100);
+  width: 90%;
+}
+
+.btn {
+  border: none;
+  padding: 10px 30px;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.btn--top {
+  margin-top: 25px;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+}
+
+.hero-img {
+  height: 500px;
+}
+
+.hidden {
+  display: none;
+}
+
+.flex {
+  display: flex;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background-color: rgba(0, 0, 0, 0.5);
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+}
+
+.upload {
+  width: 60%;
+  background-color: white;
+  height: 500px;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.upload h1 {
+  text-align: center;
+  font-size: 25px;
+  color: var(--secondary-color);
+}
+
+.upload__header {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.icon-close {
+  cursor: pointer;
+}
+
+.alert {
+  color: red;
+  font-size: medium;
+  text-align: center;
+}
+
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 5px solid var(--primary-color);
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

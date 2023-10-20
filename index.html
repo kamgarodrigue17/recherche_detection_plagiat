@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="index.css" />
+    <script type="module" src="./scripts/pages/index.js" defer></script>
+    <title>No plagiat</title>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Noplagiat</h1>
+    </div>
+    <div class="hero">
+      <div class="hero__text">
+        <h1>Bienvenu sur Noplagiat</h1>
+        <p>
+          Votre plateforme qui vous permet d'analyser des fichiers plagiées en
+          temps réel.
+        </p>
+
+        <button class="btn--top btn-open btn btn-primary">Analyser</button>
+      </div>
+      <img
+        class="hero-img"
+        src="./assets/Humaaans - 3 Characters (1).png"
+        alt="hero"
+      />
+    </div>
+    <div class="overlay hidden">
+      <div class="upload">
+        <div class="upload__header">
+          <img class="icon-close" src="./assets/close.svg" alt="icon close" />
+        </div>
+        <h1>Uploader un fichier .pdf ou .docx</h1>
+        <div class="main">
+          <h2 class="alert"></h2>
+          <input type="file" id="fichier" accept=".pdf,.docx" />
+          <button class="btn btn-primary btn--top btn-valid">Valider</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
