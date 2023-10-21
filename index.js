@@ -5,13 +5,12 @@ const morgan            = require("morgan")
 const bodyParser        = require("body-parser") 
 const cors  = require("cors")
 const app = express();
- const fs = require('fs');
- const download = require('download');
- const stringSimilarity = require('string-similarity');
+
+
 
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
-const natural = require('natural');
+
 
 const now = require('performance-now');
 
@@ -24,6 +23,8 @@ const puppeteer = require('puppeteer');
 
 const { PDFDocument } = require('pdf-lib');
 const pdf = require('pdf-parse');
+const elementsAleatoires = require('./elementsAleatoires');
+const traitement = require('./traitement');
 require('events').EventEmitter.defaultMaxListeners = 0
 
 app.use(morgan('dev'))
@@ -35,7 +36,7 @@ app.use(cors());
 const port = 5000;
 
 app.use(express.json());// Handle SSE endpoint connection
-app.use('/upload',express.static(__dirname + '/downloaded_pdfs'))
+app.use('/downloaded_pdfs',express.static(__dirname + '/downloaded_pdfs'))
 
 
 // Configurez Multer pour gérer les fichiers uploadés
@@ -55,13 +56,13 @@ app.post('/detection-plagiat',upload.single('document'), async (req, res) => {
       const dataBuffer = await pdf(fileBuffer);
       var text = dataBuffer.text
     console.log(text.split('\n\n'))
-      traitement(req,res,text.split('\n\n'),text)
+      traitement(req,res, elementsAleatoires(text.split('\n\n')),text)
     } else if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
       mammoth.extractRawText({ buffer: fileBuffer })
         .then(result => {
           const text = result.value;
           console.log(text.split('\n\n'))
-          traitement(req,res,text.split('\n\n'),text)
+          traitement(req,res,elementsAleatoires(text.split('\n\n')),text)
         })
         .catch(error => {
           console.error('Erreur lors de la conversion du document Word :', error);
@@ -83,234 +84,12 @@ app.post('/detection-plagiat',upload.single('document'), async (req, res) => {
  
  
  });
- async function traitement(req,res, textdoc,text) {
-  var links=[];
-  let index;
-  try {
-   
 
-
-for (index = 0; index < 3; index++) {
-  element=textdoc[index]
-  links.push( ...await  searchGoogleForPDFs(element));
-  /*.then(pdfLinks => {
-       links.push(pdfLinks);
-       console.log(index)
-  
-  }).catch(error => {
-    console.error('Erreur lors de la recherche :', error);
-  });*/
- 
-}
-console.log(links)
-console.log(index)
-
-
-
-
-  downloadPDFs(links, outputFolder,text)
-    .then(pdfFiles => {
-
-      return comparePDFsWithInput(text, pdfFiles,res,
-      0);
-    })
-    .then(similarityResults => {
-      console.log('Résultats de la comparaison :', similarityResults);
-    })
-    .catch(error => {
-      console.error('Erreur dans lapplication :', error);
-    });
-
-
-
-
-    
-  
-    
-   
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Une erreur est survenue lors de la détection du plagiat.' });
-  }
-
-  
- }
 
 app.listen(port, () => {
   console.log(`L'API est en cours d'exécution sur http://localhost:${port}`);
 });
- linksToCompare =[]
  
- 
-
- async function searchGoogleForPDFs(query) {
-  console.log(`https://www.google.com/search?q=${encodeURIComponent(formatText(query))}&num=10&filter=0`)
-
-    try {
-      const browser = await puppeteer.launch({
-  args: ['--no-sandbox'],
-  headless: true,
-  ignoreHTTPSErrors: true,
-  defaultViewport: null,
-  args: ['--start-maximized'],
-});
-const page = await browser.newPage();
-await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-
-      // Effectuer une recherche Google avec la requête
-      await page.goto(`https://www.google.com/search?q=${encodeURIComponent(query)}&num=10&filter=0`);
-      
-      // Extraire les liens pertinents pointant vers des fichiers PDF
-      var ct =await page.content();
-      console.log(ct.toString())
-      const pdfLinks = await page.evaluate(() => {
-        const links = Array.from(document.querySelectorAll('a'));
-        
-        return links
-          .map(link => link.href)
-          .filter(href => href.endsWith('.pdf'));
-      });
-  
-      await browser.close();
-console.log(pdfLinks)
-      return pdfLinks;
-    } catch (error) {
-      console.error('Erreur lors de la recherche de fichiers PDF :', error);
-      throw error;
-    }
-  }
-  
-  async function downloadPDFs(pdfLinks, outputFolder) {
-console.log(" Téléchargez les documents à partir des liens et stockez-les localement");
-
-    const downloadedPDFs = [];
-    for (const link of pdfLinks) {
-      console.log(link)
-        try {
-           
-          // Téléchargez les documents à partir des liens et stockez-les localement
-          const fileName = link.split('/').pop();
-          const filePath = `${outputFolder}/${fileName}`;
-          await download(link, outputFolder, { filename: fileName });
-          
-          downloadedPDFs.push(filePath);
-          //console.log(pdfLinks)
-         
-
-        } catch (error) {
-          console.error(`Erreur lors du téléchargement de ${link}: ${error.message}`);
-        }
-      }
-      return downloadedPDFs;
-    }
-  
-  async function comparePDFsWithInput(inputFile, pdfFiles,res,algo) {
-    try {
-      // Charger le contenu du fichier d'entrée
-    //  const inputBuffer = fs.readFileSync(inputFile);
-     // const inputText = await pdf(inputBuffer);
-  
-//const inputTextContent = inputText.text;
-const inputTextContent = inputFile;
-      const similarityResults = [];
-  
-      // Comparer le texte du document d'entrée avec chaque fichier PDF téléchargé
-      for (const pdfFile of pdfFiles) {
-        const pdfBuffer = fs.readFileSync(pdfFile);
-        const pdfText = await pdf(pdfBuffer);
-  
-        const pdfTextContent = pdfText.text;
-  console.log(formatText(pdfText.text))
-        // Implémentez votre propre algorithme de comparaison de texte ou utilisez une bibliothèque
-        // Ici, un exemple simple de calcul de similarité (à améliorer)
-        var similarity;
-        switch (algo) {
-          case 0:
-            similarity = calculateSimilarity(inputTextContent, pdfTextContent);
-
-            break;
-            case 1:
-               similarity = calculateSimilaritymidle(inputTextContent, pdfTextContent);
-
-            break;
-        
-          default:
-            similarity = calculateSimilaritybasic(inputTextContent, pdfTextContent);
-
-            break;
-        }
-  
-        similarityResults.push({ pdfFile, similarity });
-      }
-      if (res!=null) {
-        res.json({ similarityResults });
-      }
-      return similarityResults;
-    } catch (error) {
-      console.error('Erreur lors de la comparaison des fichiers PDF :', error);
-      throw error;
-    }
-  }
-  
-
-
-function calculateSimilaritybasic(text1, text2) {
-    const start = now(); 
-  // Exemple simplifié de calcul de similarité (à améliorer)
-  const commonWords = text1.split(' ').filter(word => text2.includes(word));
-  const similarity = (commonWords.length / text1.split(' ').length) * 100;
-
-  
-  
-  const end = now(); // Enregistrez le moment où la fonction a terminé l'exécution
-  const executionTime = (end - start).toFixed(2); // Calculez le temps d'exécution en millisecondes
-
-  console.log('Temps d\'exécution de la fonction :', executionTime, 'ms');
-  return similarity;
-}
-
-function calculateSimilaritymidle(text1, text2) {
-  // Utilisez string-similarity pour calculer la similarité entre les deux textes
-  var similarity = stringSimilarity.compareTwoStrings(text1, text2) * 100;
-
-  
-  const end = now(); // Enregistrez le moment où la fonction a terminé l'exécution
-  const executionTime = (end - start).toFixed(2); // Calculez le temps d'exécution en millisecondes
-
-  console.log('Temps d\'exécution de la fonction :', executionTime, 'ms');
-  return similarity;
-}
-
-
-
-
-//calcule la similarité en utilisant l'indice de Jaccard, qui mesure la similitude entre deux ensembles
-function calculateSimilarity(text1, text2) {
-    const start = now(); 
-
-  // Tokenizez les deux textes en mots
-  const tokenizer = new natural.WordTokenizer();
-  const tokens1 = new Set(tokenizer.tokenize(text1));
-  const tokens2 = new Set(tokenizer.tokenize(text2));
-
-  // Calculez la distance de Jaccard entre les deux ensembles de tokens
-  const intersection = new Set([...tokens1].filter(x => tokens2.has(x)));
-  const union = new Set([...tokens1, ...tokens2]);
-  const jaccardSimilarity = intersection.size / union.size;
-
-  // Convertissez la similarité en pourcentage
-  const similarity = jaccardSimilarity * 100;
-  
-  const end = now(); // Enregistrez le moment où la fonction a terminé l'exécution
-  const executionTime = (end - start).toFixed(2); // Calculez le temps d'exécution en millisecondes
-
-  console.log('Temps d\'exécution de la fonction :', executionTime, 'ms');
-
-  return similarity;
-}
-
-
-
   
   // Exemple d'utilisation de l'application
   const query = 'Texte à rechercher sur Internet';
@@ -346,21 +125,7 @@ function calculateSimilarity(text1, text2) {
 
     
     
-      function formatText(inputText) {
-        // Divisez le texte en paragraphes en utilisant un saut de ligne comme délimiteur
-        const paragraphs = inputText.split('\n');
-        
-        // Supprimez les espaces vides au début et à la fin de chaque paragraphe
-        const trimmedParagraphs = paragraphs.map(paragraph => paragraph.trim());
-        
-        // Supprimez les paragraphes vides
-        const nonEmptyParagraphs = trimmedParagraphs.filter(paragraph => paragraph.length > 0);
-        
-        // Joignez les paragraphes formatés en une seule chaîne de caractères avec un espace entre les paragraphes
-        const formattedText = nonEmptyParagraphs.join(' ');
-        
-        return formattedText;
-      }
+      
       
       
       
