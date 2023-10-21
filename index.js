@@ -24,7 +24,7 @@ const puppeteer = require('puppeteer');
 
 const { PDFDocument } = require('pdf-lib');
 const pdf = require('pdf-parse');
-
+require('events').EventEmitter.defaultMaxListeners = 0
 
 app.use(morgan('dev'))
 app.use(bodyParser.urlencoded({extended:true}))
@@ -32,7 +32,7 @@ app.use(bodyParser.json({limit: '300mb'}))
 app.use(cors());
 
 
-const port = 3000;
+const port = 5000;
 
 app.use(express.json());// Handle SSE endpoint connection
 app.use('/upload',express.static(__dirname + '/downloaded_pdfs'))
@@ -53,14 +53,15 @@ app.post('/detection-plagiat',upload.single('document'), async (req, res) => {
     // Vérifiez le type du fichier (PDF ou Word)
     if (req.file.mimetype === 'application/pdf') {
       const dataBuffer = await pdf(fileBuffer);
-      const text = dataBuffer.text;
-    
-      traitement(req,res,text)
+      var text = dataBuffer.text
+    console.log(text.split('\n\n'))
+      traitement(req,res,text.split('\n\n'),text)
     } else if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
       mammoth.extractRawText({ buffer: fileBuffer })
         .then(result => {
           const text = result.value;
-          traitement(req,res,text)
+          console.log(text.split('\n\n'))
+          traitement(req,res,text.split('\n\n'),text)
         })
         .catch(error => {
           console.error('Erreur lors de la conversion du document Word :', error);
@@ -82,18 +83,35 @@ app.post('/detection-plagiat',upload.single('document'), async (req, res) => {
  
  
  });
- function traitement(req,res,textdoc) {
+ async function traitement(req,res, textdoc,text) {
+  var links=[];
+  let index;
   try {
-    
-    const documentText = textdoc;
-    searchGoogleForPDFs(documentText)
-    .then(pdfLinks => {
-        console.log(pdfLinks)
-     return downloadPDFs(pdfLinks, outputFolder);
-    })
+   
+
+
+for (index = 0; index < 3; index++) {
+  element=textdoc[index]
+  links.push( ...await  searchGoogleForPDFs(element));
+  /*.then(pdfLinks => {
+       links.push(pdfLinks);
+       console.log(index)
+  
+  }).catch(error => {
+    console.error('Erreur lors de la recherche :', error);
+  });*/
+ 
+}
+console.log(links)
+console.log(index)
+
+
+
+
+  downloadPDFs(links, outputFolder,text)
     .then(pdfFiles => {
 
-      return comparePDFsWithInput(documentText, pdfFiles,res,
+      return comparePDFsWithInput(text, pdfFiles,res,
       0);
     })
     .then(similarityResults => {
@@ -106,6 +124,9 @@ app.post('/detection-plagiat',upload.single('document'), async (req, res) => {
 
 
 
+    
+  
+    
    
   } catch (error) {
     console.error(error);
@@ -136,7 +157,6 @@ app.listen(port, () => {
 const page = await browser.newPage();
 await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
 
-  
       // Effectuer une recherche Google avec la requête
       await page.goto(`https://www.google.com/search?q=${encodeURIComponent(query)}&num=10&filter=0`);
       
@@ -152,7 +172,7 @@ await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/5
       });
   
       await browser.close();
-
+console.log(pdfLinks)
       return pdfLinks;
     } catch (error) {
       console.error('Erreur lors de la recherche de fichiers PDF :', error);
@@ -161,8 +181,11 @@ await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/5
   }
   
   async function downloadPDFs(pdfLinks, outputFolder) {
+console.log(" Téléchargez les documents à partir des liens et stockez-les localement");
+
     const downloadedPDFs = [];
     for (const link of pdfLinks) {
+      console.log(link)
         try {
            
           // Téléchargez les documents à partir des liens et stockez-les localement
@@ -294,7 +317,7 @@ function calculateSimilarity(text1, text2) {
   const outputFolder = 'downloaded_pdfs';
   const inputFile = 'input.pdf';
   const start = now(); 
-  searchGoogleForPDFs(documentText)
+  /*searchGoogleForPDFs(documentText)
     .then(pdfLinks => {
         console.log(pdfLinks)
      return downloadPDFs(pdfLinks, outputFolder);
@@ -312,7 +335,7 @@ function calculateSimilarity(text1, text2) {
     .catch(error => {
       console.error('Erreur dans lapplication :', error);
     });
-
+*/
 
 
 
