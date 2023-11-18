@@ -4,7 +4,7 @@ const now = require('performance-now');
 function calculateSimilaritybasic(text1, text2) {
     const start = now(); 
   // Exemple simplifié de calcul de similarité (à améliorer)
-  const commonWords = text1.split(' ').filter(word => text2.includes(word));
+  const commonWords = text1.split('').filter(word => text2.includes(word));
   const similarity = (commonWords.length / text1.split(' ').length) * 100;
 
   

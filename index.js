@@ -8,12 +8,13 @@ const app = express();
 
 
 
+
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 
 
 const now = require('performance-now');
-
+const wordcount = require('wordcount');
 const mammoth = require('mammoth');
 const multer = require('multer');
 
@@ -25,6 +26,7 @@ const { PDFDocument } = require('pdf-lib');
 const pdf = require('pdf-parse');
 const elementsAleatoires = require('./elementsAleatoires');
 const traitement = require('./traitement');
+const bertsimilarity = require('./bertsimilarity');
 require('events').EventEmitter.defaultMaxListeners = 0
 
 app.use(morgan('dev'))
@@ -38,6 +40,7 @@ const port = 5000;
 app.use(express.json());// Handle SSE endpoint connection
 app.use('/downloaded_pdfs',express.static(__dirname + '/downloaded_pdfs'))
 
+app.use('/upload_docs',express.static(__dirname + '/upload_docs'))
 
 // Configurez Multer pour gérer les fichiers uploadés
 const storage = multer.memoryStorage();
@@ -54,12 +57,14 @@ app.post('/detection-plagiat',upload.single('document'), async (req, res) => {
     // Vérifiez le type du fichier (PDF ou Word)
     if (req.file.mimetype === 'application/pdf') {
       const dataBuffer = await pdf(fileBuffer);
+      
       var text = dataBuffer.text
     console.log(text.split('\n\n'))
       traitement(req,res, elementsAleatoires(text.split('\n\n')),text)
     } else if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
       mammoth.extractRawText({ buffer: fileBuffer })
         .then(result => {
+          
           const text = result.value;
           console.log(text.split('\n\n'))
           traitement(req,res,elementsAleatoires(text.split('\n\n')),text)
@@ -86,10 +91,60 @@ app.post('/detection-plagiat',upload.single('document'), async (req, res) => {
  });
 
 
+ app.post('/analyse_doc',upload.single('document'), async (req, res) => {
+ 
+ 
+  try {
+    const fileBuffer = req.file.buffer;
+
+    // Vérifiez le type du fichier (PDF ou Word)
+    if (req.file.mimetype === 'application/pdf') {
+      const dataBuffer = await pdf(fileBuffer);
+      
+      res.json({ "nbmot": wordcount(dataBuffer.text), "page":dataBuffer.numpages ,"text":dataBuffer.text});
+   
+    } else if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      mammoth.extractRawText({ buffer: fileBuffer })
+        .then(result => {
+          
+          
+          console.log(result);
+          res.json({ "nbmot": wordcount(result.value), "page":0 ,"text":result.value});
+
+        })
+        .catch(error => {
+          console.error('Erreur lors de l analyse du document Word :', error);
+          res.status(500).send('Erreur lors de la conversion du document Word.');
+        });
+    } else {
+      res.status(400).send('Type de fichier non pris en charge.');
+    }
+  } catch (error) {
+    console.error('Erreur lors du traitement du fichier :', error);
+    res.status(500).send('Erreur lors du traitement du fichier.');
+  }
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ });
+
+
+
+
+
+
+
+
+
 app.listen(port, () => {
   console.log(`L'API est en cours d'exécution sur http://localhost:${port}`);
 });
- 
+bertsimilarity();
   
   // Exemple d'utilisation de l'application
   const query = 'Texte à rechercher sur Internet';
