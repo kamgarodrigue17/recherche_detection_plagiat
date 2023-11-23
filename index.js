@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const download = require('download');
 const cheerio = require('cheerio');
 const morgan            = require("morgan")
 const bodyParser        = require("body-parser") 
@@ -7,7 +8,7 @@ const cors  = require("cors")
 const app = express();
 
 
-
+const mimetype = require('mimetype');
 
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
@@ -94,6 +95,9 @@ app.post('/detection-plagiat',upload.single('document'), async (req, res) => {
  app.post('/analyse_doc',upload.single('document'), async (req, res) => {
  
  
+  
+ 
+ if (req.file) {
   try {
     const fileBuffer = req.file.buffer;
 
@@ -123,11 +127,50 @@ app.post('/detection-plagiat',upload.single('document'), async (req, res) => {
     console.error('Erreur lors du traitement du fichier :', error);
     res.status(500).send('Erreur lors du traitement du fichier.');
   }
+  
+ }
  
  
- 
- 
- 
+ try {
+  const { link } = req.body;
+
+  if (!link) {
+    return res.status(400).json({ error: 'Veuillez fournir un lien vers le document.' });
+  }
+
+  // Télécharge le document à partir du lien
+  const buffer = await download(link);
+
+  // Détecte le type de fichier
+  const detectedMimeType = mimetype.lookup(link);
+  console.log(detectedMimeType)
+
+  if (!detectedMimeType) {
+    return res.status(400).json({ error: 'Type de fichier non pris en charge ou impossible à détecter.' });
+  }
+
+  
+
+  if (detectedMimeType === 'application/pdf') {
+    // Pour les fichiers PDF
+    const data = await pdf(buffer);
+    const wordCount = data.text.split(/\s+/).length;
+    const pageCount = data.numpages;
+
+    res.json({ wordCount, pageCount });
+  } else if (detectedMimeType === 'application/docx') {
+    // Pour les fichiers Word
+    const result = await mammoth.extractRawText({ arrayBuffer: buffer });
+    const wordCount = wordcount(result.value);
+
+    res.json({ wordCount });
+  } else {
+    res.status(400).json({ error: 'Type de fichier non pris en charge.' });
+  }
+} catch (error) {
+  console.error(error);
+  res.status(500).json({ error: 'Une erreur est survenue lors du traitement du document.' });
+}
  
  
  
