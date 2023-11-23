@@ -30,7 +30,7 @@ async function traitement(req,res, textdoc,text) {
     downloadPDFs(links, outputFolder,text)
       .then(pdfFiles => {
   
-       res.status(200).json(pdfFiles);
+       res.status(200).json({pdfFiles});
       })
       .then(similarityResults => {
         console.log('Résultats de la comparaison :', similarityResults);
