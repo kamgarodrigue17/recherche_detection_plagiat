@@ -28,6 +28,7 @@ const pdf = require('pdf-parse');
 const elementsAleatoires = require('./elementsAleatoires');
 const traitement = require('./traitement');
 const bertsimilarity = require('./bertsimilarity');
+const comparePDFsWithInput = require('./comparePDFsWithInput');
 require('events').EventEmitter.defaultMaxListeners = 0
 
 app.use(morgan('dev'))
@@ -81,23 +82,12 @@ app.post('/detection-plagiat',upload.single('document'), async (req, res) => {
     console.error('Erreur lors du traitement du fichier :', error);
     res.status(500).send('Erreur lors du traitement du fichier.');
   }
- 
- 
- 
- 
- 
- 
- 
- 
  });
 
 
  app.post('/analyse_doc',upload.single('document'), async (req, res) => {
  
- 
-  
- 
- if (req.file) {
+if (req.file) {
   try {
     const fileBuffer = req.file.buffer;
 
@@ -154,16 +144,16 @@ app.post('/detection-plagiat',upload.single('document'), async (req, res) => {
   if (detectedMimeType === 'application/pdf') {
     // Pour les fichiers PDF
     const data = await pdf(buffer);
-    const wordCount = data.text.split(/\s+/).length;
-    const pageCount = data.numpages;
+   
+    res.json({ "nbmot": wordcount(data.text), "page":data.numpages ,"text":data.text});
 
-    res.json({ wordCount, pageCount });
+   
   } else if (detectedMimeType === 'application/docx') {
     // Pour les fichiers Word
     const result = await mammoth.extractRawText({ arrayBuffer: buffer });
-    const wordCount = wordcount(result.value);
+    
+    res.json({ "nbmot":wordcount(result.value), "page":0 ,"text":result.value});
 
-    res.json({ wordCount });
   } else {
     res.status(400).json({ error: 'Type de fichier non pris en charge.' });
   }
@@ -216,6 +206,34 @@ bertsimilarity();
 
 
 
+app.post('/traitement_doc', async (req, res) => {
+ 
+ 
+  try {
+   
+    
+    console.log(req.body.text)
+      traitement(req,res, elementsAleatoires(req.body.text.split('\n\n')),req.body.text)
+    
+  } catch (error) {
+    console.error('Erreur lors du traitement du fichier :', error);
+    res.status(500).send('Erreur lors du traitement du fichier.');
+  }
+ });
+
+ app.post('/detection', async (req, res) => {
+ 
+ 
+  try {
+   
+    
+    return comparePDFsWithInput(req.body.text, req.body.pdfFiles,res,
+      0);    
+  } catch (error) {
+    console.error('Erreur lors du traitement du fichier :', error);
+    res.status(500).send('Erreur lors du traitement du fichier.');
+  }
+ });
 
 
     
