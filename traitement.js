@@ -1,3 +1,4 @@
+
 const comparePDFsWithInput = require("./comparePDFsWithInput");
 const downloadPDFs = require("./downloadPDFs");
 const searchGoogleForPDFs = require("./searchGoogleForPDFs");
@@ -20,7 +21,9 @@ async function traitement(req,res, textdoc,text) {
       console.error('Erreur lors de la recherche :', error);
     });*/
    
+   
   }
+  links=[... new Set(links)];
   console.log(links)
   console.log(index)
   

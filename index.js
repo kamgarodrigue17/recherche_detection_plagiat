@@ -29,6 +29,10 @@ const elementsAleatoires = require('./elementsAleatoires');
 const traitement = require('./traitement');
 const bertsimilarity = require('./bertsimilarity');
 const comparePDFsWithInput = require('./comparePDFsWithInput');
+const calculateSimilarity = require('./calculateSimilarity');
+const getPlagiaDetail = require('./getPorcentage');
+const getPourcentage = require('./getPorcentage');
+const findPlagiarizedPhrases = require('./getPorcentage');
 require('events').EventEmitter.defaultMaxListeners = 0
 
 app.use(morgan('dev'))
@@ -165,7 +169,11 @@ if (req.file) {
  
  
  });
-
+ const doc1 = "Ceci est un exemple de document. Une erreur est survenue lors. L'API est en cours d'exécution sur http://localhost:5000. ";
+ const doc2 = "L'API est en cours d'exécution sur http://localhost:5000. Une erreur est survenue lors.";
+ 
+calculateSimilarity(doc1,doc2)
+//findPlagiarizedPhrases(doc1,doc2)
 
 
 
@@ -177,7 +185,7 @@ if (req.file) {
 app.listen(port, () => {
   console.log(`L'API est en cours d'exécution sur http://localhost:${port}`);
 });
-bertsimilarity();
+//bertsimilarity();
   
   // Exemple d'utilisation de l'application
   const query = 'Texte à rechercher sur Internet';
@@ -205,6 +213,22 @@ bertsimilarity();
 */
 
 
+
+
+
+app.post('/getPlagiaDetail', async (req, res) => {
+ 
+ 
+  try {
+   
+    
+    console.log(req.body.text)
+    getPlagiaDetail(req.body.text, req.body.pdfFiles,res);    
+  } catch (error) {
+    console.error('Erreur lors du traitement du fichier :', error);
+    res.status(500).send('Erreur lors du traitement du fichier.');
+  }
+ });
 
 app.post('/traitement_doc', async (req, res) => {
  

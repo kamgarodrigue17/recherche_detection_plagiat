@@ -4,6 +4,7 @@ const calculateSimilarity = require('./calculateSimilarity');
 const calculateSimilaritymidle = require('./calculateSimilaritymidle');
 const calculateSimilaritybasic = require('./calculateSimilaritybasic');
 const formatText = require('./formatText');
+const cosineSimilarity = require('./bertsimilarity');
 async function comparePDFsWithInput(inputFile, pdfFiles,res,algo) {
     try {
       // Charger le contenu du fichier d'entrée
@@ -30,6 +31,10 @@ const inputTextContent = inputFile;
 
             break;
             case 1:
+               similarity = cosineSimilarity(inputTextContent, pdfTextContent);
+
+            break;
+            case 2:
                similarity = calculateSimilaritymidle(inputTextContent, pdfTextContent);
 
             break;

@@ -13,7 +13,8 @@ function calculateSimilarity(text1, text2) {
   const intersection = new Set([...tokens1].filter(x => tokens2.has(x)));
   const union = new Set([...tokens1, ...tokens2]);
   const jaccardSimilarity = intersection.size / union.size;
-
+  console.log( tokens1.size- intersection.size);
+  console.log(intersection.size);
   // Convertissez la similarité en pourcentage
   const similarity = jaccardSimilarity * 100;
   
