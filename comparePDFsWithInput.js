@@ -27,19 +27,27 @@ const inputTextContent = inputFile;
         var similarity;
         switch (algo) {
           case 0:
+            //calcule la similarité en utilisant l'indice de Jaccard, qui mesure la similitude entre deux ensembles
+
             similarity = calculateSimilarity(inputTextContent, pdfTextContent);
 
             break;
             case 1:
+                          //calcule la similarité en utilisant le cosine similary
+
                similarity = cosineSimilarity(inputTextContent, pdfTextContent);
 
             break;
             case 2:
+                  // Utilisez string-similarity pour calculer la similarité entre les deux textes
+
                similarity = calculateSimilaritymidle(inputTextContent, pdfTextContent);
 
             break;
         
           default:
+                // Utilisez string-similarity pour calculer la similarité entre les deux textes
+
             similarity = calculateSimilaritybasic(inputTextContent, pdfTextContent);
 
             break;

@@ -18,19 +18,26 @@ function getUnionsWithoutDuplicates(data,doc1) {
   const tokenizer = new natural.SentenceTokenizer();
   const sentences1 = tokenizer.tokenize(doc1);
 
-  // Initialiser les tableaux pour les unions sans doublons
+  
   var plagiarized=0;
 var unique = 0;
+var plagiarizedPhrases = [];
+  var uniquePhrases = [];
 totalphrase=sentences1.length
 
-  // Parcourir chaque élément du tableau
   data.forEach(element => {
   
-    // Obtenir les tableaux à partir des champs spécifiés
-    const plagiarizedPhrases = element.analye.plagiarizedPhrasesrep.nb;
-    const uniquePhrases = element.analye.uniquePhrasesrep.nb;
-plagiarized=plagiarized<plagiarizedPhrases?plagiarizedPhrases:plagiarized;
-unique=unique>uniquePhrases?uniquePhrases:unique;
+    // trouvons le nombre maximal des mot plagier.
+    const nbplagiarizedPhrases = element.analye.plagiarizedPhrasesrep.nb;
+    const nbuniquePhrases = element.analye.uniquePhrasesrep.nb;
+plagiarized=plagiarized<nbplagiarizedPhrases?nbplagiarizedPhrases:plagiarized;
+unique=unique>nbuniquePhrases?nbuniquePhrases:unique;
+//==============================================================
+
+  // trouvons DE MANIERE MAXIMAL les mot plagier et unique des mot plagier.
+   plagiarizedPhrases =plagiarizedPhrases.length<nbplagiarizedPhrases? element.analye.plagiarizedPhrasesrep.plagiarizedPhrases:plagiarizedPhrases;
+  uniquePhrases =uniquePhrases.length>nbuniquePhrases? element.analye.uniquePhrasesrep.uniquePhrases:uniquePhrases;
+
 
 });
 
@@ -39,7 +46,9 @@ unique=unique>uniquePhrases?uniquePhrases:unique;
   return {
     plagiarized,
     unique,
-    totalphrase
+    totalphrase,
+    plagiarizedPhrases,
+    uniquePhrases
   };
 }
 
@@ -63,15 +72,15 @@ function findPlagiarizedPhrases(doc1, doc2) {
       }
   });
   plagiarizedPhrasesrep={
-    //"plagiarizedPhrases":plagiarizedPhrases,
+    "plagiarizedPhrases":plagiarizedPhrases,
     "nb":plagiarizedPhrases.length
   }
   uniquePhrasesrep={
-    //"uniquePhrases":uniquePhrases,
+  "uniquePhrases":uniquePhrases,
     "nb":uniquePhrases.length
   }
 
-console.log( { plagiarizedPhrasesrep, uniquePhrasesrep, });
+//console.log( { plagiarizedPhrasesrep, uniquePhrasesrep, });
   return { plagiarizedPhrasesrep, uniquePhrasesrep };
 }
 
@@ -79,11 +88,7 @@ console.log( { plagiarizedPhrasesrep, uniquePhrasesrep, });
 
 async function getPlagiaDetail(inputFile, pdfFiles,res) {
     try {
-      // Charger le contenu du fichier d'entrée
-    //  const inputBuffer = fs.readFileSync(inputFile);
-     // const inputText = await pdf(inputBuffer);
-  
-//const inputTextContent = inputText.text;
+     
 const inputTextContent = inputFile;
       var similarityResults = [];
   
@@ -94,8 +99,6 @@ const inputTextContent = inputFile;
   
         const pdfTextContent = pdfText.text;
   console.log(formatText(pdfText.text))
-        // Implémentez votre propre algorithme de comparaison de texte ou utilisez une bibliothèque
-        // Ici, un exemple simple de calcul de similarité (à améliorer)
         var analye;
         
         analye = findPlagiarizedPhrases(inputTextContent, pdfTextContent);
@@ -104,9 +107,9 @@ const inputTextContent = inputFile;
   
         similarityResults.push({ pdfFile, analye });
       }
-      if (res!=null) {
+     if (res!=null) {
       similarityResults=getUnionsWithoutDuplicates(similarityResults,inputTextContent);
-        res.json({ similarityResults });
+        res.json({ similarityResults});
       }
       return similarityResults;
     } catch (error) {
