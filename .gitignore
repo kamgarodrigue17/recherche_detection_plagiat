@@ -12,6 +12,7 @@ npm-debug.log
 yarn-error.log
 
 /downloaded_pdfs
+/upload
 # IDEs and editors
 .idea/
 .project
