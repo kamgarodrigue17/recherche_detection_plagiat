@@ -33,6 +33,8 @@ const calculateSimilarity = require('./calculateSimilarity');
 const getPlagiaDetail = require('./getPorcentage');
 const getPourcentage = require('./getPorcentage');
 const findPlagiarizedPhrases = require('./getPorcentage');
+const sequelize = require('./src/db/sequelize');
+
 require('events').EventEmitter.defaultMaxListeners = 0
 
 app.use(morgan('dev'))
@@ -47,7 +49,7 @@ app.use(express.json());// Handle SSE endpoint connection
 app.use('/downloaded_pdfs',express.static(__dirname + '/downloaded_pdfs'))
 
 app.use('/upload_docs',express.static(__dirname + '/upload_docs'))
-
+sequelize.initDB();
 // Configurez Multer pour gérer les fichiers uploadés
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -73,18 +75,19 @@ app.post('/detection-plagiat',upload.single('document'), async (req, res) => {
           
           const text = result.value;
           console.log(text.split('\n\n'))
-          traitement(req,res,elementsAleatoires(text.split('\n\n')),text)
+          traitement(
+            req,res,elementsAleatoires(text.split('\n\n')),text)
         })
         .catch(error => {
           console.error('Erreur lors de la conversion du document Word :', error);
-          res.status(500).send('Erreur lors de la conversion du document Word.');
+          return res.status(500).send('Erreur lors de la conversion du document Word.');
         });
     } else {
-      res.status(400).send('Type de fichier non pris en charge.');
+      return res.status(400).send('Type de fichier non pris en charge.');
     }
   } catch (error) {
     console.error('Erreur lors du traitement du fichier :', error);
-    res.status(500).send('Erreur lors du traitement du fichier.');
+    return  res.status(500).send('Erreur lors du traitement du fichier.');
   }
  });
 
@@ -99,7 +102,7 @@ if (req.file) {
     if (req.file.mimetype === 'application/pdf') {
       const dataBuffer = await pdf(fileBuffer);
       
-      res.json({ "nbmot": wordcount(dataBuffer.text), "page":dataBuffer.numpages ,"text":dataBuffer.text});
+      return  res.json({ "nbmot": wordcount(dataBuffer.text), "page":dataBuffer.numpages ,"text":dataBuffer.text});
    
     } else if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
       mammoth.extractRawText({ buffer: fileBuffer })
@@ -107,19 +110,19 @@ if (req.file) {
           
           
           console.log(result);
-          res.json({ "nbmot": wordcount(result.value), "page":0 ,"text":result.value});
+          return    res.json({ "nbmot": wordcount(result.value), "page":0 ,"text":result.value});
 
         })
         .catch(error => {
           console.error('Erreur lors de l analyse du document Word :', error);
-          res.status(500).send('Erreur lors de la conversion du document Word.');
+          return  res.status(500).send('Erreur lors de la conversion du document Word.');
         });
     } else {
-      res.status(400).send('Type de fichier non pris en charge.');
+      return  res.status(400).send('Type de fichier non pris en charge.');
     }
   } catch (error) {
     console.error('Erreur lors du traitement du fichier :', error);
-    res.status(500).send('Erreur lors du traitement du fichier.');
+    return res.status(500).send('Erreur lors du traitement du fichier.');
   }
   
  }
@@ -149,21 +152,21 @@ if (req.file) {
     // Pour les fichiers PDF
     const data = await pdf(buffer);
    
-    res.json({ "nbmot": wordcount(data.text), "page":data.numpages ,"text":data.text});
+    return res.json({ "nbmot": wordcount(data.text), "page":data.numpages ,"text":data.text});
 
    
   } else if (detectedMimeType === 'application/docx') {
     // Pour les fichiers Word
     const result = await mammoth.extractRawText({ arrayBuffer: buffer });
     
-    res.json({ "nbmot":wordcount(result.value), "page":0 ,"text":result.value});
+  return  res.json({ "nbmot":wordcount(result.value), "page":0 ,"text":result.value});
 
   } else {
-    res.status(400).json({ error: 'Type de fichier non pris en charge.' });
+    return res.status(400).json({ error: 'Type de fichier non pris en charge.' });
   }
 } catch (error) {
   console.error(error);
-  res.status(500).json({ error: 'Une erreur est survenue lors du traitement du document.' });
+  return res.status(500).json({ error: 'Une erreur est survenue lors du traitement du document.' });
 }
  
  
@@ -260,6 +263,32 @@ app.post('/traitement_doc', async (req, res) => {
  });
 
 
+     //user
+  require("./src/routes/user/register")(app);
+  require("./src/routes/user/login")(app);
+  require("./src/routes/user/userById")(app);
+
+      //formule
+      require("./src/routes/formule/get")(app);
+      require("./src/routes/formule/register")(app);
+       //raport
+       require("./src/routes/rapport/rapportByUser")(app);
+       require("./src/routes/rapport/get")(app);
+       require("./src/routes/rapport/register")(app);
+
+       //souscription
+       require("./src/routes/souscription/register")(app);
+       require("./src/routes/souscription/get")(app);
+       require("./src/routes/souscription/souscriptionByUser")(app);
+
+
+      
+
+         
+
+
+     
+     
     
    
 
@@ -303,68 +332,3 @@ app.post('/traitement_doc', async (req, res) => {
 
 
 
-
- /*
- async function getSimilarLinks(searchQuery) {
-   try {
-     // Effectuez une recherche Google en utilisant le texte comme requête de recherche
-     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
-     const response = await axios.get(searchUrl);
- 
-     // Utilisez Cheerio pour extraire les liens des résultats de recherche
-     const $ = cheerio.load(response.data);
-     const links = [];
- 
-     // Les liens dans les résultats de recherche Google sont généralement dans des balises "a"
-     $('a').each((index, element) => {
-       const link = $(element).attr('href');
-       if (link && link.startsWith('http')) {
-         links.push(link);
-       }
-     });
- console.log(links)
-     return links;
-   } catch (error) {
-     console.error('Erreur lors de la recherche de liens similaires :', error);
-     throw error;
-   }
- }
- 
- async function downloadDocuments(links, outputFolder) {
-   for (const link of links) {
-     try {
-       // Téléchargez les documents à partir des liens et stockez-les localement
-       const fileName = link.split('/').pop();
-       await download(link, outputFolder, { filename: fileName });
-     } catch (error) {
-       console.error(`Erreur lors du téléchargement de ${link}: ${error.message}`);
-     }
-   }
- }
- 
- async function compareDocuments(documentText, documentFolderPath) {
-   // Lisez le contenu du document d'entrée
-   const inputDocumentText = fs.readFileSync(documentFolderPath + '/input.txt', 'utf-8');
- 
-   // Comparez le texte du document d'entrée avec chaque document téléchargé
-   // Vous pouvez utiliser une bibliothèque de comparaison de texte ici
-   // Par exemple : const similarity = compareText(inputDocumentText, downloadedText);
- 
-   // Affichez les résultats de la comparaison
-   // console.log('Similarity with', fileName, 'is', similarity);
- }
- 
- // Exemple d'utilisation
- const searchQuery = 'Texte à rechercher sur Internet';
- const outputFolder = 'downloaded_documents';
- 
- getSimilarLinks(documentText)
-   .then(links => {
-     downloadDocuments(links, outputFolder).then(() => {
-       compareDocuments(searchQuery, outputFolder);
-     });
-   })
-   .catch(error => {
-     console.error('Erreur lors de la recherche de liens similaires :', error);
-   });
- */

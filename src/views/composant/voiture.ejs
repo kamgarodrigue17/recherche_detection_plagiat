@@ -1,0 +1,34 @@
+<div  class=" <%- voiture.marqueId %> voiture col-12 col-sm-6 col-md-6 col-lg-6 col-xl-4">
+    <div class="product-card card overflow-hidden">
+        <img class="w-100 mt-0" src="<%- url %>/<%- voiture.photo %>" alt="product-image"/>
+        <div class="card-body h-100">
+            <div class="d-flex">
+                <span class="text-muted text-wrap small mx-1 mg-b-5"><%- voiture.typeVoiture.nom%></span>
+                <span class="text-muted text-wrap small mx-1 mg-b-5">Marque</span>
+               
+                <span class="ml-auto"><i class="fa fa-heart text-danger"></i></span>
+            </div>
+
+            <div class="d-flex">
+           
+                <span class="text-muted text-wrap small mx-1 mg-b-5">categorie</span>
+                <span class="text-muted text-wrap small mx-1 mg-b-5">consommation</span>
+                
+            </div>
+         
+            <h3 class="titre h6 mb-2 font-weight-bold text-uppercase"><%- voiture.nom %></h3>
+            
+            <div>
+            
+                <h4 class="h5 w-75 font-weight-bold text-danger"><%- voiture.prix %><span class="text-dark mx-1">FCFA</span> </h4>
+                
+            </div>
+            <a class="side-menu__item" href="<%- url %>/api/voiture/detail/<%- voiture.id %>">  <button class="btn btn-primary btn-block mb-0 mt-4">
+                Voir
+               
+              
+            </button>  </a>
+        </div>
+    </div>
+</div>
+

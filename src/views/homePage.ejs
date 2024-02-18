@@ -1,0 +1,190 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=0'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="Description" content="Dashfox - Laravel Admin & Dashboard Template">
+    <meta name="Author" content="Spruko Technologies Private Limited">
+    <meta name="Keywords" content="admin template, admin dashboard, bootstrap dashboard template, bootstrap 4 admin template, laravel, php framework, php laravel, laravel framework, php mvc, laravel admin panel, laravel admin panel, laravel template, laravel bootstrap, blade laravel, best php framework"/>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- <script src="/js/main.js"></script> -->
+    <!-- Title -->
+    <title> Admin voiture </title>
+    <script src="https://cdn.anychart.com/releases/8.0.1/js/anychart-core.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.0.1/js/anychart-pie.min.js"></script>
+
+    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js" type="text/javascript"></script>
+  
+    <%- include('composant/cssincludes'); %> 
+</head>
+<body class="main-body light-theme app sidebar-mini active leftmenu-color">
+    <div id="global-loader">
+        <img src="/publics/img/loader-2.svg" class="loader-img" alt="Loader">
+    </div>
+    <!-- /Loader -->
+  
+     <!-- main-sidebar -->
+       <div class="app-sidebar__overlay" data-toggle="sidebar"></div>
+        <%- include('composant/sidemenu'); %> 
+
+        <div class="main-content app-content" >
+
+          <%- include('composant/sidebare',{nom:user.nom,photo:user.photo}); %> 
+            
+           <div class="container-fluid mg-t-20">
+              <%- include('composant/button'); %> 
+                <div class="row row-sm">
+                    <div class="col-xl-3 col-lg-4 mb-3 mb-md-0">
+                      <%- include('composant/search'); %> 
+                      <%- include('composant/filter',{marque:marque}); %> 
+                        
+                    </div>
+                    <div class="col-xl-9 col-lg-8">
+                        <div id="list" class="row row-sm">
+                            
+                            <% for(var i=0; i < voiture.length; i++) { %>
+                            <%- include('composant/voiture',{voiture:voiture[i]}); %> 
+							<% } %>
+
+                        </div>
+                    </div>
+                    
+                </div>
+                
+            </div>
+            
+        </div>
+
+        <!-- *********************************** modal  pour ajouter une annonce ************************************************************ -->
+							<div class="modal" id="modaldemo1">
+								<%- include('composant/addAnnModal',{marque:marque, conso:consomation, typeVoiture:typeVoiture, categori:categori}); %>
+							</div>
+
+</body>
+<%- include('composant/scriptIncudes'); %> 
+<script src="/publics/js/custom.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    
+var checkboxes = document.querySelectorAll('.chec');
+
+// filter les voiture par
+checkboxes.forEach(function(checkbox) {
+  checkbox.addEventListener('change', function() {
+    // Vérifier si le checkbox est coché
+    if (this.checked) {
+      // Parcourir les autres checkboxes
+      checkboxes.forEach(function(otherCheckbox) {
+        // Décocher les checkboxes autres que celle actuellement cochée
+        if (otherCheckbox !== checkbox) {
+            
+          otherCheckbox.checked = false;
+        }
+        checkboxfilter(checkbox.getAttribute("id"))
+      });
+    }
+  });
+});
+
+    // fonction de filtrer de voiture en temps reel
+function checkboxfilter(id) {
+  
+
+ 
+ // Sélectionner la liste
+ var list = document.getElementById("list");
+
+items=document.getElementsByClassName("voiture")
+  console.log(items)
+  // Parcourir les éléments de la liste
+  for (var i = 0; i < items.length; i++) {
+    var item = items[i];
+   var idhtml= item.getAttribute("class").split(' ')[0];
+   console.log(id +"="+item.getAttribute("class")[1])
+    console.log(item.getAttribute("class")[1]==id || id=="-1")
+   // Vérifier si l'élément correspond à la recherche
+    if (item.getAttribute("class")[1]==id || id==-1) {
+      // Afficher l'élément s'il correspond à la recherche
+      item.style.display = "";
+    } else {
+      // Masquer l'élément s'il ne correspond pas à la recherche
+      item.style.display = "none";
+    }
+  }
+}
+document.getElementById("searchInput").addEventListener("input", realtimeSearch);
+// fonction de filtrer de voiture en temps reel
+function realtimeSearch() {
+    
+    // Récupérer la valeur de recherche
+ var searchValue = document.getElementById("searchInput").value.toLowerCase();
+console.log(searchValue);
+// Sélectionner la liste
+var list = document.getElementById("list");
+
+ // Récupérer tous les éléments de la liste
+ var items = list.getElementsByClassName("voiture");
+ 
+ // Parcourir les éléments de la liste
+ for (var i = 0; i < items.length; i++) {
+   var item = items[i];
+  var name= item.getElementsByClassName("titre")[0].innerHTML;
+   
+  // Vérifier si l'élément correspond à la recherche
+   if (name.toLowerCase().indexOf(searchValue) > -1) {
+     // Afficher l'élément s'il correspond à la recherche
+     item.style.display = "";
+   } else {
+     // Masquer l'élément s'il ne correspond pas à la recherche
+     item.style.display = "none";
+   }
+ }
+}
+$(document).ready(function() {
+	  // Ecouteur pour soumettre le formulaire
+		$('#my-formS').submit(function(event) {
+		event.preventDefault();
+	
+		//var formData = $(form).serialize();
+		var formdata= new FormData(this);
+	let form =$('#my-formS').serialize()
+		// Envoi de la requête AJAX
+		$.ajax({
+			url: "<%= url%>/api/voiture/register",
+			type: 'POST',
+			processData: false,
+			contentType: false,
+			data: formdata,
+
+			success: function(data) {
+			
+				showConfirm(redirectHomeU);
+				window.location.href = "<%-url%>/homePage"
+			},
+			error: function(xhr, status, error) {
+				alert("Something went wrong" +form); // handle error response
+			}
+		})
+		});
+	});
+
+  function showConfirm(callback){
+		swal(
+			{
+				title: 'SUCCES!',
+				text: 'Annonces Ajouter avec succes!',
+				type: 'success',
+				// confirmButtonColor: '#57a94f'
+			}
+		)
+		callback();
+	}
+	function redirectHomeU(){
+		setTimeout( function(){
+			window.location.href="<%-url%>/homePage";
+		}, 1000)
+	}
+</script>
+</html>

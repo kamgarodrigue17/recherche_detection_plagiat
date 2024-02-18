@@ -1,0 +1,47 @@
+<div class="col-xl-12">
+    <div class="card">
+        <div class="single-productslide">
+            <div class="row no-gutter">
+                <div class="col-lg-6 border-right">
+                    <div class=" pb-0 image-zoom-container">
+                        <div class="show image-zoom" href="<%- url %>/<%- voiture.photo %>">
+                            <img src="<%- url %>/<%- voiture.photo %>" id="show-img" alt="img">
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="p-4">
+                        <h4 class="product-title"><%- voiture.nom %></h4>
+                        
+                        <p class="product-description"><%- voiture.description %></p>
+                        <h6 class="price">prix: <%- voiture.prix %> <span class="text-dark mx-1">FCFA</span></h6>
+                        
+                        <div class="sizes d-flex">Marque:
+                            <span class="size d-flex"  data-toggle="tooltip" title="small"><%- voiture.marque.dataValues.nom %></span>
+            
+                        </div>
+                        <div class="sizes d-flex">categorie:
+                            <span class="size d-flex"  data-toggle="tooltip" title="small"><%- voiture.category.dataValues.nom %></span>
+            
+                        </div>
+                        <div class="sizes d-flex">Type:
+                            <span class="size d-flex"  data-toggle="tooltip" title="small"><%- voiture.typeVoiture.dataValues.nom %></span>
+            
+                        </div>
+                        <div class="sizes d-flex">consommation:
+                            <span class="size d-flex"  data-toggle="tooltip" title="small"><%- voiture.consomation.dataValues.nom %></span>
+            
+                        </div>
+                        <div class="action">
+                            
+                            <button  onclick="deleteU('<%= voiture.id %>')" class="add-to-cart btn btn-danger" type="button">Supprimer</button>
+                            <a data-effect="effect-super-scaled" data-toggle="modal" href="#modaldemo2"> 
+                            <button class="add-to-cart btn btn-success" type="button">Modifier</button></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,35 @@
+<div class="card ">
+    <h5 class="m-0 p-3 card-title bg-white border-bottom">Marques</h5>
+    <div class="py-2 px-3">
+        <label class="p-1 mt-2 d-flex align-items-center">
+            <span class="checkbox">
+                <span class="check-box mb-0">
+                    <span class="ckbox"><input checked="" id="-1"  type="checkbox" class="chec"><span></span></span>
+                </span>
+            </span>
+            <span class="ml-2">
+                Tout
+            </span>
+        </label>
+        <% for(var i=0; i < marque.length; i++) { %>
+        <label class="p-1 mt-2 d-flex align-items-center">
+            <span class="checkbox">
+                <span class="check-box mb-0">
+                    <span class="ckbox"><input class="chec" id="<%- marque[i].id%>"  value="<%- marque[i].id%>" type="checkbox"><span></span></span>
+                </span>
+            </span>
+            <span class="ml-2">
+                <%- marque[i].nom %>
+            </span>
+        </label>
+        <% } %>
+    </div>
+    <div class="card">
+        <a data-effect="effect-super-scaled" data-toggle="modal" href="#modaldemo1"><button id="button" class="btn btn-primary  data-btn">Ajouter</button></a>
+    </div>
+</div>
+<!-- <div class="card overflow-hidden">
+</div>
+ <div class="card overflow-hidden">
+</div>
+</div> -->
