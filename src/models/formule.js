@@ -9,6 +9,10 @@ const formule =(sequelize, DataTypes)=>{
             type: DataTypes.STRING,
             allowNull: false
         },
+        prix: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
         description: {
             type: DataTypes.STRING,
             allowNull: false
@@ -30,6 +34,10 @@ const formule =(sequelize, DataTypes)=>{
             allowNull: false
         },
         nbpost: {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
+        limite: {
             type: DataTypes.INTEGER,
             allowNull: false
         },

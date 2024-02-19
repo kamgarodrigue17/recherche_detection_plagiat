@@ -24,11 +24,16 @@ const user =(sequelize, DataTypes)=>{
             },
             allowNull: false
         },
+
         photo: {
             type: DataTypes.STRING,
            
         },
         credit:{
+            type: DataTypes.DOUBLE,
+          
+        },
+        creditRestant:{
             type: DataTypes.DOUBLE,
           
         },

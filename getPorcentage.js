@@ -44,6 +44,7 @@ unique=unique>nbuniquePhrases?nbuniquePhrases:unique;
  
   // Retourner les résultats
   return {
+    "text":sentences1,
     plagiarized,
     unique,
     totalphrase,
@@ -87,6 +88,8 @@ function findPlagiarizedPhrases(doc1, doc2) {
 
 
 async function getPlagiaDetail(inputFile, pdfFiles,res) {
+
+
     try {
      
 const inputTextContent = inputFile;
