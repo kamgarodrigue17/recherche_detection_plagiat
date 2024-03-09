@@ -1,11 +1,11 @@
-const {rapportTable, userTable,formuleTable} = require ("../../db/sequelize");
+const {souscriptionTable, userTable,formuleTable} = require ("../../db/sequelize");
 const {Op} = require('sequelize');
 
 
 module.exports = (app)=>{
   app.get("/api/souscription/ByUser/:userId", (req ,res)=>{
 
-    rapportTable.findAll({
+    souscriptionTable.findAll({
         where:{userId:req.params.userId},
 
         include:[userTable,formuleTable]
@@ -18,6 +18,7 @@ module.exports = (app)=>{
 
       })
       .catch(err =>{
+        console.log(err)
         res.status(500).json({message: "Erreur lors de la recuperation de la liste! Reessayer plus tard",err})
       })
     
