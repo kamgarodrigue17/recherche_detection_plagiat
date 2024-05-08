@@ -3,11 +3,12 @@ const bcrypt = require('bcrypt');
 
 const { souscriptionTable,formuleTable,userTable} = require("../../db/sequelize");
 const { json } = require('body-parser');
+const verifyToken = require('../../middleware/auth');
 
 
 
 module.exports=(app) =>{
-    app.post("/api/souscription/add",async (req,res)=>{
+    app.post("/api/souscription/add",verifyToken,async (req,res)=>{
    
 formule= await formuleTable.findByPk(req.body.formuleId);
 
@@ -20,13 +21,8 @@ formule= await formuleTable.findByPk(req.body.formuleId);
             .then(user=>{
   
               if (user) {
-                // Mettez à jour le champ souhaité
-               
-                  
-                  user.credit = 	formule.nbmot;
-                
-               
-          
+                // Mettez à jour le champ souhaité 
+                  user.credit +=formule.nbmot;
                 // Enregistrez les modifications dans la base de données
                 return user.save();
               } else {
@@ -36,9 +32,9 @@ formule= await formuleTable.findByPk(req.body.formuleId);
           
             }) .then(updatedUser => {
               if (updatedUser) {
-                console.log('Champ modifié avec succès.');
+                console.log('souscription effectuer avec succès.');
                 
-                const message="L'souscription "+req.body.titre+" a bien été créé";
+                const message="L'souscription "+formule.titre+" a bien été effectué";
                 return   res.status(200).json({message, data: rapport});
     
               }

@@ -1,10 +1,11 @@
 const {rapportTable} = require ("../../db/sequelize");
 const {Op} = require('sequelize');
 const { userTable } = require('../../db/sequelize');
+const verifyToken = require("../../middleware/auth");
 
 
 module.exports = (app)=>{
-  app.get("/api/rapport/all/", (req ,res)=>{
+  app.get("/api/rapport/all/",verifyToken ,(req ,res)=>{
 
     rapportTable.findAll({
         include:[userTable]

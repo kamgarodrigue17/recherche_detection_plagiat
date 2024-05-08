@@ -1,9 +1,10 @@
 const {formuleTable} = require ("../../db/sequelize");
 const {Op} = require('sequelize');
+const verifyToken = require("../../middleware/auth");
 
 
 module.exports = (app)=>{
-  app.get("/api/formules/all/", (req ,res)=>{
+  app.get("/api/formules/all/", verifyToken,(req ,res)=>{
 
       formuleTable.findAll()
       .then(conso =>{

@@ -5,9 +5,10 @@ const { rapportTable } = require("../../db/sequelize");
 const { json } = require('body-parser');
 
 
-const upload =require("../../middleware/rapportUploaud")
+const upload =require("../../middleware/rapportUploaud");
+const verifyToken = require('../../middleware/auth');
 module.exports=(app) =>{
-    app.post("/api/rapport/add",upload.single("rapport"),(req,res)=>{
+    app.post("/api/rapport/add",verifyToken,upload.single("rapport"),(req,res)=>{
    
 
 

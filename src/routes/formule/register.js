@@ -2,12 +2,13 @@ const { ValidationError } = require('sequelize');
 const bcrypt = require('bcrypt');
 const { formuleTable } = require('../../db/sequelize');
 
-const upload =require("../../middleware/formuleUpload")
+const upload =require("../../middleware/formuleUpload");
+const verifyToken = require('../../middleware/auth');
 
 
 
 module.exports=(app) =>{
-    app.post("/api/formules/add",upload.single("image"),(req,res)=>{
+    app.post("/api/formules/add",verifyToken,upload.single("image"),(req,res)=>{
         if(req.file){
                   req.body.image = req.file.path
                  

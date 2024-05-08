@@ -1,9 +1,10 @@
 const {souscriptionTable, userTable,formuleTable} = require ("../../db/sequelize");
 const {Op} = require('sequelize');
+const verifyToken = require("../../middleware/auth");
 
 
 module.exports = (app)=>{
-  app.get("/api/souscription/ByUser/:userId", (req ,res)=>{
+  app.get("/api/souscription/ByUser/:userId",verifyToken ,(req ,res)=>{
 
     souscriptionTable.findAll({
         where:{userId:req.params.userId},

@@ -3,9 +3,10 @@ const bcrypt = require('bcrypt');
 const {userTable}= require("../../db/sequelize");
 
 const privatekey=require('../../auth/private_key');
+const verifyToken = require('../../middleware/auth');
 
 module.exports=(app)=>{
-    app.get('/api/user/getbyid/:id',(req,res)=>{
+    app.get('/api/user/getbyid/:id',verifyToken,(req,res)=>{
         console.log(req.params);
         userTable.findByPk(req.params.id)
         .then(user=>{

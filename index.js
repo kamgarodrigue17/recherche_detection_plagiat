@@ -6,6 +6,7 @@ const morgan            = require("morgan")
 const bodyParser        = require("body-parser") 
 const cors  = require("cors")
 const app = express();
+const { souscriptionTable,formuleTable,userTable} = require("./src/db/sequelize");
 
 
 const mimetype = require('mimetype');
@@ -34,6 +35,7 @@ const getPlagiaDetail = require('./getPorcentage');
 const getPourcentage = require('./getPorcentage');
 const findPlagiarizedPhrases = require('./getPorcentage');
 const sequelize = require('./src/db/sequelize');
+const verifyToken = require('./src/middleware/auth');
 
 require('events').EventEmitter.defaultMaxListeners = 0
 
@@ -56,7 +58,7 @@ const upload = multer({ storage: storage });
 
 const documentText = "De la programmation orient´ee-objet `a l’architecture en passant par les patrons de conception,la programmation par aspects et le typage dynamique, ce cours gradu´e est l’occasion de trouver des r´eponses `a vos questions en g´enie logiciel et de poser de nouvelles questions. Ce cours est destin´e aux ´etudiants que le g´enie logiciel sous toutes ses formes int´eresse et qui veulent approfondir leurs connaissances et toucher `a des domaines recherche pointus. Il s’adresse `a des ´etudiants motiv´es1, connaissant d´ej`a bien la programmation et ayant de bonnes bases en g´enie logiciel (IFT2251) et, si possible, dans des domaines connexes (IFT390X). Le professeur souhaite que les ´etudiants qui s’inscrivent au cours viennent `a toutes les s";
 
-app.post('/detection-plagiat',upload.single('document'), async (req, res) => {
+app.post('/detection-plagiat',verifyToken,upload.single('document'), async (req, res) => {
  
  
   try {
@@ -92,7 +94,7 @@ app.post('/detection-plagiat',upload.single('document'), async (req, res) => {
  });
 
 
- app.post('/analyse_doc',upload.single('document'), async (req, res) => {
+ app.post('/analyse_doc',verifyToken,upload.single('document'), async (req, res) => {
  
 if (req.file) {
   try {
@@ -143,6 +145,7 @@ if (req.file) {
   console.log(detectedMimeType)
 
   if (!detectedMimeType) {
+    
     return res.status(400).json({ error: 'Type de fichier non pris en charge ou impossible à détecter.' });
   }
 
@@ -248,12 +251,22 @@ app.post('/traitement_doc', async (req, res) => {
   }
  });
 
+
  app.post('/detection', async (req, res) => {
- 
- 
   try {
-   
-    
+    userTable.findByPk(req.body.userId)
+    .then(user=>{
+
+      if (user) {
+        // Mettez à jour le champ souhaité 
+          user.credit -=req.body.nbmot;
+        // Enregistrez les modifications dans la base de données
+        return user.save();
+      } else {
+        
+     return   res.status(400).send('Utilisateur non trouvé');
+      }
+    })
     return comparePDFsWithInput(req.body.text, req.body.pdfFiles,res,
       0);    
   } catch (error) {
@@ -262,8 +275,7 @@ app.post('/traitement_doc', async (req, res) => {
   }
  });
 
-
-     //user
+ //user
   require("./src/routes/user/register")(app);
   require("./src/routes/user/login")(app);
   require("./src/routes/user/userById")(app);

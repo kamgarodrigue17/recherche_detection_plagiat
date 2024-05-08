@@ -1,8 +1,9 @@
 const { ValidationError } = require('sequelize');
 const bcrypt = require('bcrypt');
 const {userTable}= require("../../db/sequelize");
+const jwt = require('jsonwebtoken');
 
-const privatekey=require('../../auth/private_key');
+const private_key = require('../../auth/private_key');
 
 module.exports=(app)=>{
     app.post('/api/user/login',(req,res)=>{
@@ -20,17 +21,17 @@ module.exports=(app)=>{
                     const message="Le mot de passe est incorrect!";
                     return res.status(401).json({message});
                 }
-              /*  // JWT
+            
                 const token =jwt.sign(
                     {
-                        clientsId:admin.id
+                        clientsId:user.id
                     },
-                    privatekey,
+                    private_key,
                     {expiresIn:'1000h'}
-                )*/
+                )
                // req.session.user=user;
                 const message="L'utilisateur a ete connecte avec succes!";
-                    return res.status(200).json({message, data:user});
+                    return res.status(200).json({message, data:user,token});
              })
         })
         .catch(err=>{

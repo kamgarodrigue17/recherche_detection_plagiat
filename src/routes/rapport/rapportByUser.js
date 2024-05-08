@@ -1,9 +1,10 @@
 const {rapportTable, userTable} = require ("../../db/sequelize");
 const {Op} = require('sequelize');
+const verifyToken = require("../../middleware/auth");
 
 
 module.exports = (app)=>{
-  app.get("/api/rapport/ByUser/:userId", (req ,res)=>{
+  app.get("/api/rapport/ByUser/:userId", verifyToken,(req ,res)=>{
 
     rapportTable.findAll({
         where:{userId:req.params.userId},

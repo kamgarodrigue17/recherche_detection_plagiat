@@ -1,7 +1,12 @@
-const jwt = require('jsonwebtoken');
-    const private_key = require('../auth/private_key');
 
-module.exports = (req, res, next) => {
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const private_key = require('../auth/private_key');
+
+const app = express();
+
+// Middleware pour vérifier l'authentification JWT
+function verifyToken(req, res, next) {
     const authorization = req.headers.authorization;
 
     if(!authorization){
@@ -27,3 +32,4 @@ module.exports = (req, res, next) => {
 );
 
 }
+module.exports=verifyToken;
